@@ -56,25 +56,41 @@ export const mockSupabase = {
     signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
       await delay(1000)
 
-      // Permitir cualquier email y contraseña válidos para desarrollo
-      if (email && password && email.includes('@') && password.length >= 6) {
+      // Validación simple para desarrollo
+      if (!email || !email.includes('@')) {
+        return {
+          data: { user: null },
+          error: { message: 'Email debe ser válido' }
+        }
+      }
+
+      if (!password || password.length < 6) {
+        return {
+          data: { user: null },
+          error: { message: 'Contraseña debe tener mínimo 6 caracteres' }
+        }
+      }
+
+      // Crear usuario mock
+      try {
         const user = {
-          id: `mock-${Date.now()}`,
+          id: 'user-123',
           email
         }
 
         localUser = user
         localMotorizado = {
           ...mockMotorizado,
-          user_id: user.id
+          user_id: user.id,
+          nombre: 'Carlos Rodríguez'
         }
 
         return { data: { user }, error: null }
-      }
-
-      return {
-        data: { user: null },
-        error: { message: 'Email debe contener @ y contraseña mínimo 6 caracteres' }
+      } catch (error) {
+        return {
+          data: { user: null },
+          error: { message: 'Error al iniciar sesión' }
+        }
       }
     },
 

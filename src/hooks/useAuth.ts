@@ -53,11 +53,22 @@ export function useAuth() {
   }
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await mockSupabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { data, error }
+    try {
+      const { data, error } = await mockSupabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      
+      if (data.user && !error) {
+        setUser(data.user)
+        await fetchMotorizado(data.user.id)
+      }
+      
+      return { data, error }
+    } catch (error) {
+      console.error('Error in signIn:', error)
+      return { data: { user: null }, error: { message: 'Error de conexión' } }
+    }
   }
 
   const signUp = async (email: string, password: string, motorizadoData: Omit<MockMotorizado, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {

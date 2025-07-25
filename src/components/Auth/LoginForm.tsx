@@ -20,14 +20,16 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
     setError('')
 
     try {
-      const result = await signIn(email, password)
+      const { data, error } = await signIn(email, password)
 
-      if (result?.error) {
-        setError(result.error.message || 'Credenciales inválidas')
-      } else {
-        console.log('Login exitoso')
+      if (error) {
+        setError(error.message || 'Error al iniciar sesión')
+      } else if (data?.user) {
+        // Login exitoso, el useAuth manejará la redirección
+        console.log('Login exitoso:', data.user.email)
       }
     } catch (err) {
+      console.error('Error en login:', err)
       setError('Error inesperado. Intenta nuevamente.')
     } finally {
       setLoading(false)
@@ -45,7 +47,8 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
           <p className="text-gray-600">Inicia sesión en tu cuenta de motorizado</p>
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
             <p className="font-medium mb-1">Para desarrollo:</p>
-            <p>Usa cualquier email válido (ej: test@email.com) y contraseña de mínimo 6 caracteres</p>
+            <p><strong>Email:</strong> test@email.com</p>
+            <p><strong>Contraseña:</strong> 123456</p>
           </div>
         </div>
 
