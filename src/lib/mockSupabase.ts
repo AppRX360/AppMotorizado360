@@ -56,9 +56,10 @@ export const mockSupabase = {
     signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
       await delay(1000)
 
-      if (email && password) {
+      // Permitir cualquier email y contraseña válidos para desarrollo
+      if (email && password && email.includes('@') && password.length >= 6) {
         const user = {
-        id: `mock-${Date.now()}`,
+          id: `mock-${Date.now()}`,
           email
         }
 
@@ -73,7 +74,7 @@ export const mockSupabase = {
 
       return {
         data: { user: null },
-        error: { message: 'Credenciales inválidas' }
+        error: { message: 'Email debe contener @ y contraseña mínimo 6 caracteres' }
       }
     },
 

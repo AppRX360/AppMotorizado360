@@ -43,6 +43,10 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Bienvenido</h1>
           <p className="text-gray-600">Inicia sesión en tu cuenta de motorizado</p>
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+            <p className="font-medium mb-1">Para desarrollo:</p>
+            <p>Usa cualquier email válido (ej: test@email.com) y contraseña de mínimo 6 caracteres</p>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
