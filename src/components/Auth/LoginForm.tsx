@@ -20,11 +20,14 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
     setError('')
 
     try {
-      const { error } = await signIn(email, password)
-      if (error) {
-        setError(error.message)
+      const result = await signIn(email, password)
+
+      if (result?.error) {
+        setError(result.error.message || 'Credenciales inválidas')
+      } else {
+        console.log('Login exitoso')
       }
-    } catch (error) {
+    } catch (err) {
       setError('Error inesperado. Intenta nuevamente.')
     } finally {
       setLoading(false)
