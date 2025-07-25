@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { usePedidos } from './hooks/usePedidos'
 import { useEstadisticas } from './hooks/useEstadisticas'
