@@ -8,28 +8,36 @@ interface LoginFormProps {
 
 export function LoginForm({ onToggleMode }: LoginFormProps) {
   const { signIn } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('test@email.com')
+  const [password, setPassword] = useState('123456')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('🚀 Formulario enviado con:', email, password)
+    
     setLoading(true)
     setError('')
 
     try {
-      const { data, error } = await signIn(email, password)
+      console.log('📞 Llamando a signIn...')
+      const result = await signIn(email, password)
+      console.log('📋 Resultado recibido:', result)
 
-      if (error) {
-        setError(error.message || 'Error al iniciar sesión')
-      } else if (data?.user) {
-        // Login exitoso, el useAuth manejará la redirección
-        console.log('Login exitoso:', data.user.email)
+      if (result.error) {
+        console.log('❌ Error en login:', result.error.message)
+        setError(result.error.message)
+      } else if (result.data?.user) {
+        console.log('✅ Login exitoso para:', result.data.user.email)
+        // El useAuth manejará la actualización del estado
+      } else {
+        console.log('⚠️ Resultado inesperado:', result)
+        setError('Resultado inesperado del login')
       }
     } catch (err) {
-      console.error('Error en login:', err)
+      console.error('💥 Error capturado en handleSubmit:', err)
       setError('Error inesperado. Intenta nuevamente.')
     } finally {
       setLoading(false)
@@ -45,11 +53,11 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Bienvenido</h1>
           <p className="text-gray-600">Inicia sesión en tu cuenta de motorizado</p>
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
-            <p className="font-medium mb-1">Para desarrollo:</p>
-            <p><strong>Email:</strong> Cualquier email válido</p>
-            <p><strong>Contraseña:</strong> Mínimo 6 caracteres</p>
-            <p className="mt-1 text-xs">Ejemplo: test@email.com / 123456</p>
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+            <p className="font-medium mb-1">✅ Sistema Local Activo</p>
+            <p><strong>Email:</strong> test@email.com</p>
+            <p><strong>Contraseña:</strong> 123456</p>
+            <p className="mt-1 text-xs">O cualquier email/contraseña</p>
           </div>
         </div>
 

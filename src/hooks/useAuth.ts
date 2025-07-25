@@ -8,31 +8,42 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log('🔍 Verificando sesión existente...')
+    
     // Verificar si hay una sesión activa al cargar
     const currentUser = localAuth.getCurrentSession()
     const currentMotorizado = localAuth.getCurrentMotorizado()
     
     if (currentUser && currentMotorizado) {
+      console.log('✅ Sesión encontrada:', currentUser.email)
       setUser(currentUser)
       setMotorizado(currentMotorizado)
+    } else {
+      console.log('❌ No hay sesión activa')
     }
     
     setLoading(false)
   }, [])
 
   const signIn = async (email: string, password: string) => {
+    console.log('🔐 Iniciando signIn con:', email)
+    
     try {
       const result = await localAuth.signIn(email, password)
       
-      if (result.success) {
-        setUser(result.user!)
-        setMotorizado(result.motorizado!)
+      console.log('📊 Resultado del login:', result)
+      
+      if (result.success && result.user && result.motorizado) {
+        setUser(result.user)
+        setMotorizado(result.motorizado)
+        console.log('✅ Estado actualizado en useAuth')
         return { data: { user: result.user }, error: null }
       } else {
-        return { data: { user: null }, error: { message: result.error } }
+        console.log('❌ Login falló:', result)
+        return { data: { user: null }, error: { message: 'Error en login' } }
       }
     } catch (error) {
-      console.error('Error in signIn:', error)
+      console.error('💥 Error en signIn:', error)
       return { data: { user: null }, error: { message: 'Error de conexión' } }
     }
   }
@@ -45,15 +56,15 @@ export function useAuth() {
     try {
       const result = await localAuth.signUp(email, password, motorizadoData)
       
-      if (result.success) {
-        setUser(result.user!)
-        setMotorizado(result.motorizado!)
+      if (result.success && result.user && result.motorizado) {
+        setUser(result.user)
+        setMotorizado(result.motorizado)
         return { data: { user: result.user }, error: null }
       } else {
-        return { data: { user: null }, error: { message: result.error } }
+        return { data: { user: null }, error: { message: 'Error en registro' } }
       }
     } catch (error) {
-      console.error('Error in signUp:', error)
+      console.error('Error en signUp:', error)
       return { data: { user: null }, error: { message: 'Error de conexión' } }
     }
   }
@@ -65,7 +76,7 @@ export function useAuth() {
       setMotorizado(null)
       return { error: null }
     } catch (error) {
-      console.error('Error in signOut:', error)
+      console.error('Error en signOut:', error)
       return { error: { message: 'Error al cerrar sesión' } }
     }
   }
@@ -74,17 +85,19 @@ export function useAuth() {
     try {
       const result = await localAuth.updateDisponibilidad(estado)
       
-      if (result.success) {
-        setMotorizado(result.motorizado!)
+      if (result.success && result.motorizado) {
+        setMotorizado(result.motorizado)
         return { data: result.motorizado, error: null }
       } else {
-        return { data: null, error: { message: result.error } }
+        return { data: null, error: { message: result.error || 'Error al actualizar estado' } }
       }
     } catch (error) {
       console.error('Error updating disponibilidad:', error)
       return { data: null, error: { message: 'Error al actualizar estado' } }
     }
   }
+
+  console.log('🎯 Estado actual useAuth:', { user: user?.email, motorizado: motorizado?.nombre, loading })
 
   return {
     user,
