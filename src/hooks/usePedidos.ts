@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
-import { mockSupabase, updateLocalAsignacion, removeLocalAsignacion, addLocalEntrega } from '../lib/mockSupabase'
-import { MockAsignacion } from '../data/mockData'
+import { MockAsignacion, mockAsignaciones } from '../data/mockData'
 import { useAuth } from './useAuth'
+
+// Estado local para pedidos
+let localAsignaciones: MockAsignacion[] = [...mockAsignaciones]
 
 export function usePedidos() {
   const { motorizado } = useAuth()
@@ -11,7 +13,6 @@ export function usePedidos() {
   useEffect(() => {
     if (motorizado) {
       fetchAsignaciones()
-      subscribeToAsignaciones()
     }
   }, [motorizado])
 
@@ -19,18 +20,16 @@ export function usePedidos() {
     if (!motorizado) return
 
     try {
-      const { data, error } = await mockSupabase
-        .from('asignaciones')
-        .select(`
-          *,
-          pedidos (*)
-        `)
-        .eq('motorizado_id', motorizado.id)
-        .in('estado', ['pendiente', 'aceptado'])
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setAsignaciones(data || [])
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
+      // Filtrar asignaciones del motorizado actual
+      const motorizadoAsignaciones = localAsignaciones.filter(
+        a => a.motorizado_id === motorizado.id && 
+        ['pendiente', 'aceptado'].includes(a.estado)
+      )
+      
+      setAsignaciones(motorizadoAsignaciones)
     } catch (error) {
       console.error('Error fetching asignaciones:', error)
     } finally {
@@ -38,49 +37,24 @@ export function usePedidos() {
     }
   }
 
-  const subscribeToAsignaciones = () => {
-    if (!motorizado) return
-
-    const subscription = mockSupabase
-      .channel('asignaciones_channel')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'asignaciones',
-          filter: `motorizado_id=eq.${motorizado.id}`,
-        },
-        () => {
-          fetchAsignaciones()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }
-
   const aceptarAsignacion = async (asignacionId: string) => {
     try {
-      const { error } = await mockSupabase
-        .from('asignaciones')
-        .update({
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 400))
+      
+      // Actualizar asignación local
+      const asignacionIndex = localAsignaciones.findIndex(a => a.id === asignacionId)
+      if (asignacionIndex !== -1) {
+        localAsignaciones[asignacionIndex] = {
+          ...localAsignaciones[asignacionIndex],
           estado: 'aceptado',
-          fecha_respuesta: new Date().toISOString(),
-        })
-        .eq('id', asignacionId)
-
-      if (error) throw error
-
-      // También actualizar el estado del pedido
-      const asignacion = asignaciones.find(a => a.id === asignacionId)
-      if (asignacion) {
-        await mockSupabase
-          .from('pedidos')
-          .update({ estado: 'aceptado' })
-          .eq('id', asignacion.pedido_id)
+          fecha_respuesta: new Date().toISOString()
+        }
+        
+        // También actualizar el estado del pedido
+        if (localAsignaciones[asignacionIndex].pedidos) {
+          localAsignaciones[asignacionIndex].pedidos!.estado = 'aceptado'
+        }
       }
 
       fetchAsignaciones()
@@ -93,15 +67,23 @@ export function usePedidos() {
 
   const rechazarAsignacion = async (asignacionId: string, notas?: string) => {
     try {
-      updateLocalAsignacion(asignacionId, {
-        estado: 'rechazado',
-        fecha_respuesta: new Date().toISOString(),
-        notas
-      })
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 500))
       
-      // Simular delay y remover de la lista local
+      // Actualizar asignación local
+      const asignacionIndex = localAsignaciones.findIndex(a => a.id === asignacionId)
+      if (asignacionIndex !== -1) {
+        localAsignaciones[asignacionIndex] = {
+          ...localAsignaciones[asignacionIndex],
+          estado: 'rechazado',
+          fecha_respuesta: new Date().toISOString(),
+          notas
+        }
+      }
+      
+      // Remover de la lista después de un delay
       setTimeout(() => {
-        removeLocalAsignacion(asignacionId)
+        localAsignaciones = localAsignaciones.filter(a => a.id !== asignacionId)
         fetchAsignaciones()
       }, 500)
       
@@ -114,12 +96,15 @@ export function usePedidos() {
 
   const actualizarEstadoPedido = async (pedidoId: string, nuevoEstado: string) => {
     try {
-      const { error } = await mockSupabase
-        .from('asignaciones')
-        .update({ estado: nuevoEstado })
-        .eq('id', pedidoId)
-
-      if (error) throw error
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 400))
+      
+      // Actualizar estado del pedido
+      localAsignaciones.forEach(asignacion => {
+        if (asignacion.pedidos?.id === pedidoId) {
+          asignacion.pedidos.estado = nuevoEstado as any
+        }
+      })
 
       fetchAsignaciones()
       return { success: true }
@@ -131,36 +116,27 @@ export function usePedidos() {
 
   const completarEntrega = async (asignacionId: string, entregaData: any) => {
     try {
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
       // Marcar asignación como completada
-      updateLocalAsignacion(asignacionId, {
-        estado: 'completado',
-        fecha_completado: new Date().toISOString()
-      })
-
-      // Actualizar estado del pedido y crear entrega
-      const asignacion = asignaciones.find(a => a.id === asignacionId)
-      if (asignacion && asignacion.pedidos) {
-        // Actualizar estado del pedido
-        asignacion.pedidos.estado = 'entregado'
-        
-        // Crear registro de entrega
-        const nuevaEntrega = {
-          id: `entrega-${Date.now()}`,
-          motorizado_id: motorizado!.id,
-          pedido_id: asignacion.pedido_id,
-          asignacion_id: asignacionId,
-          fecha_entrega: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          pedidos: asignacion.pedidos,
-          ...entregaData
+      const asignacionIndex = localAsignaciones.findIndex(a => a.id === asignacionId)
+      if (asignacionIndex !== -1) {
+        localAsignaciones[asignacionIndex] = {
+          ...localAsignaciones[asignacionIndex],
+          estado: 'completado',
+          fecha_completado: new Date().toISOString()
         }
         
-        addLocalEntrega(nuevaEntrega)
+        // Actualizar estado del pedido
+        if (localAsignaciones[asignacionIndex].pedidos) {
+          localAsignaciones[asignacionIndex].pedidos!.estado = 'entregado'
+        }
       }
       
-      // Remover de asignaciones activas
+      // Remover de asignaciones activas después de un delay
       setTimeout(() => {
-        removeLocalAsignacion(asignacionId)
+        localAsignaciones = localAsignaciones.filter(a => a.id !== asignacionId)
         fetchAsignaciones()
       }, 1000)
 

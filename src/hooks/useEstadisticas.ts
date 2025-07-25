@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
-import { mockSupabase, updateLocalEstadisticas, getLocalData } from '../lib/mockSupabase'
-import { MockEstadisticas, MockEntrega } from '../data/mockData'
+import { MockEstadisticas, MockEntrega, mockEstadisticasHoy, mockEntregas } from '../data/mockData'
 import { useAuth } from './useAuth'
+
+// Estado local para estadísticas
+let localEstadisticas: MockEstadisticas = { ...mockEstadisticasHoy }
+let localEntregas: MockEntrega[] = [...mockEntregas]
 
 export function useEstadisticas() {
   const { motorizado } = useAuth()
@@ -20,33 +23,16 @@ export function useEstadisticas() {
     if (!motorizado) return
 
     try {
-      const hoy = new Date().toISOString().split('T')[0]
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 300))
       
-      const { data, error } = await mockSupabase
-        .from('estadisticas_motorizado')
-        .select('*')
-        .eq('motorizado_id', motorizado.id)
-        .eq('fecha', hoy)
-        .single()
-
-      if (error && error.code === 'PGRST116') {
-        // No existe registro para hoy, crear uno
-        const { data: newData, error: insertError } = await mockSupabase
-          .from('estadisticas_motorizado')
-          .insert({
-            motorizado_id: motorizado.id,
-            fecha: hoy,
-          })
-          .select()
-          .single()
-
-        if (insertError) throw insertError
-        setEstadisticasHoy(newData)
-      } else if (error) {
-        throw error
-      } else {
-        setEstadisticasHoy(data)
+      // Actualizar motorizado_id en las estadísticas locales
+      const estadisticasActualizadas = {
+        ...localEstadisticas,
+        motorizado_id: motorizado.id
       }
+      
+      setEstadisticasHoy(estadisticasActualizadas)
     } catch (error) {
       console.error('Error fetching statistics:', error)
     }
@@ -56,24 +42,15 @@ export function useEstadisticas() {
     if (!motorizado) return
 
     try {
-      const { data, error } = await mockSupabase
-        .from('entregas')
-        .select(`
-          *,
-          pedidos (*)
-        `)
-        .eq('motorizado_id', motorizado.id)
-        .order('fecha_entrega', { ascending: false })
-        .limit(50)
-        .then((result: any) => {
-          if (result.data) {
-            setHistorialEntregas(result.data)
-          }
-        })
-
-      // También obtener datos locales actualizados
-      const localData = getLocalData()
-      setHistorialEntregas(localData.entregas)
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 400))
+      
+      // Filtrar entregas del motorizado actual
+      const motorizadoEntregas = localEntregas.filter(
+        e => e.motorizado_id === motorizado.id
+      )
+      
+      setHistorialEntregas(motorizadoEntregas)
     } catch (error) {
       console.error('Error fetching delivery history:', error)
     } finally {
@@ -91,21 +68,28 @@ export function useEstadisticas() {
 
     try {
       const nuevasEstadisticas = {
+        ...estadisticasHoy,
         total_entregas: estadisticasHoy.total_entregas + 1,
         total_ganado: estadisticasHoy.total_ganado + nuevaEntrega.valor_ganado,
         tiempo_total_trabajo: estadisticasHoy.tiempo_total_trabajo + nuevaEntrega.tiempo_total,
         distancia_total: estadisticasHoy.distancia_total + (nuevaEntrega.distancia || 0),
         rating_promedio: nuevaEntrega.rating_cliente 
           ? ((estadisticasHoy.rating_promedio * estadisticasHoy.total_entregas) + nuevaEntrega.rating_cliente) / (estadisticasHoy.total_entregas + 1)
-          : estadisticasHoy.rating_promedio
+          : estadisticasHoy.rating_promedio,
+        updated_at: new Date().toISOString()
       }
 
-      updateLocalEstadisticas(nuevasEstadisticas)
-      setEstadisticasHoy({ ...estadisticasHoy, ...nuevasEstadisticas })
+      localEstadisticas = nuevasEstadisticas
+      setEstadisticasHoy(nuevasEstadisticas)
 
     } catch (error) {
       console.error('Error updating statistics:', error)
     }
+  }
+
+  const refetch = () => {
+    fetchEstadisticasHoy()
+    fetchHistorialEntregas()
   }
 
   return {
@@ -113,9 +97,6 @@ export function useEstadisticas() {
     historialEntregas,
     loading,
     actualizarEstadisticas,
-    refetch: () => {
-      fetchEstadisticasHoy()
-      fetchHistorialEntregas()
-    }
+    refetch
   }
 }

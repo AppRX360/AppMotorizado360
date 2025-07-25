@@ -47,8 +47,9 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
           <p className="text-gray-600">Inicia sesión en tu cuenta de motorizado</p>
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
             <p className="font-medium mb-1">Para desarrollo:</p>
-            <p><strong>Email:</strong> test@email.com</p>
-            <p><strong>Contraseña:</strong> 123456</p>
+            <p><strong>Email:</strong> Cualquier email válido</p>
+            <p><strong>Contraseña:</strong> Mínimo 6 caracteres</p>
+            <p className="mt-1 text-xs">Ejemplo: test@email.com / 123456</p>
           </div>
         </div>
 
@@ -64,7 +65,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              placeholder="tu@email.com"
+              placeholder="test@email.com"
             />
           </div>
 
@@ -80,7 +81,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                placeholder="••••••••"
+                placeholder="123456"
               />
               <button
                 type="button"
