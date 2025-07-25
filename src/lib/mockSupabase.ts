@@ -58,7 +58,7 @@ export const mockSupabase = {
 
       if (email && password) {
         const user = {
-          id: mock-${Date.now()},
+        id: `mock-${Date.now()}`,
           email
         }
 
