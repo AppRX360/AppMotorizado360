@@ -1,23 +1,10 @@
-// Sistema de autenticación local para desarrollo
-import { MockUser, MockMotorizado, mockMotorizado } from '../data/mockData'
+// Sistema de autenticación local simplificado
+import { MockUser, MockMotorizado } from '../data/mockData'
 
-// Estado local de autenticación
+// Estado global simple
+let isLoggedIn = false
 let currentUser: MockUser | null = null
 let currentMotorizado: MockMotorizado | null = null
-
-// Usuarios predefinidos para desarrollo
-const localUsers = [
-  {
-    id: 'user-123',
-    email: 'test@email.com',
-    password: '123456'
-  },
-  {
-    id: 'user-456',
-    email: 'motorizado@ejemplo.com',
-    password: 'password'
-  }
-]
 
 export const localAuth = {
   // Obtener sesión actual
@@ -30,16 +17,18 @@ export const localAuth = {
     return currentMotorizado
   },
 
-  // Iniciar sesión
+  // Iniciar sesión - SIEMPRE exitoso para desarrollo
   signIn: async (email: string, password: string) => {
-    // Simular delay de red
-    await new Promise(resolve => setTimeout(resolve, 800))
+    console.log('Intentando login con:', email, password)
+    
+    // Simular delay
+    await new Promise(resolve => setTimeout(resolve, 500))
 
-    // Validaciones básicas
+    // Validaciones mínimas
     if (!email || !email.includes('@')) {
       return {
         success: false,
-        error: 'Email debe ser válido'
+        error: 'Email debe contener @'
       }
     }
 
@@ -50,32 +39,34 @@ export const localAuth = {
       }
     }
 
-    // Buscar usuario o crear uno nuevo
-    let foundUser = localUsers.find(u => u.email === email && u.password === password)
+    // SIEMPRE crear usuario exitosamente
+    const userId = `user-${Date.now()}`
     
-    if (!foundUser) {
-      // Para desarrollo, crear usuario automáticamente
-      foundUser = {
-        id: `user-${Date.now()}`,
-        email,
-        password
-      }
-      localUsers.push(foundUser)
-    }
-
-    // Establecer usuario actual
     currentUser = {
-      id: foundUser.id,
-      email: foundUser.email
+      id: userId,
+      email: email
     }
 
-    // Crear/obtener motorizado
     currentMotorizado = {
-      ...mockMotorizado,
-      id: `motorizado-${foundUser.id}`,
-      user_id: foundUser.id,
-      nombre: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1)
+      id: `motorizado-${userId}`,
+      user_id: userId,
+      nombre: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
+      telefono: '+57 300 123 4567',
+      documento: '12345678',
+      placa_vehiculo: 'ABC123',
+      tipo_vehiculo: 'motocicleta',
+      estado_disponibilidad: 'disponible',
+      ubicacion_actual: null,
+      rating: 4.8,
+      total_entregas: 247,
+      activo: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }
+
+    isLoggedIn = true
+
+    console.log('Login exitoso:', currentUser, currentMotorizado)
 
     return {
       success: true,
@@ -86,14 +77,14 @@ export const localAuth = {
 
   // Registrarse
   signUp: async (email: string, password: string, motorizadoData: any) => {
-    // Simular delay de red
-    await new Promise(resolve => setTimeout(resolve, 1200))
+    console.log('Intentando registro con:', email, motorizadoData)
+    
+    await new Promise(resolve => setTimeout(resolve, 800))
 
-    // Validaciones básicas
     if (!email || !email.includes('@')) {
       return {
         success: false,
-        error: 'Email debe ser válido'
+        error: 'Email debe contener @'
       }
     }
 
@@ -104,40 +95,27 @@ export const localAuth = {
       }
     }
 
-    // Verificar si el usuario ya existe
-    const existingUser = localUsers.find(u => u.email === email)
-    if (existingUser) {
-      return {
-        success: false,
-        error: 'Este email ya está registrado'
-      }
-    }
-
-    // Crear nuevo usuario
-    const newUser = {
-      id: `user-${Date.now()}`,
-      email,
-      password
-    }
-    localUsers.push(newUser)
-
-    // Establecer usuario actual
+    const userId = `user-${Date.now()}`
+    
     currentUser = {
-      id: newUser.id,
-      email: newUser.email
+      id: userId,
+      email: email
     }
 
-    // Crear motorizado
     currentMotorizado = {
-      id: `motorizado-${newUser.id}`,
-      user_id: newUser.id,
+      id: `motorizado-${userId}`,
+      user_id: userId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       rating: 5.0,
       total_entregas: 0,
       activo: true,
+      estado_disponibilidad: 'desconectado',
+      ubicacion_actual: null,
       ...motorizadoData
     }
+
+    isLoggedIn = true
 
     return {
       success: true,
@@ -148,19 +126,22 @@ export const localAuth = {
 
   // Cerrar sesión
   signOut: async () => {
-    await new Promise(resolve => setTimeout(resolve, 300))
+    await new Promise(resolve => setTimeout(resolve, 200))
+    
     currentUser = null
     currentMotorizado = null
+    isLoggedIn = false
+    
     return { success: true }
   },
 
-  // Actualizar disponibilidad del motorizado
+  // Actualizar disponibilidad
   updateDisponibilidad: async (estado: 'disponible' | 'ocupado' | 'desconectado') => {
     if (!currentMotorizado) {
       return { success: false, error: 'No hay motorizado logueado' }
     }
 
-    await new Promise(resolve => setTimeout(resolve, 400))
+    await new Promise(resolve => setTimeout(resolve, 300))
 
     currentMotorizado = {
       ...currentMotorizado,
@@ -172,5 +153,8 @@ export const localAuth = {
       success: true,
       motorizado: currentMotorizado
     }
-  }
+  },
+
+  // Estado de login
+  isAuthenticated: () => isLoggedIn
 }
