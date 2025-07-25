@@ -8,17 +8,19 @@ let currentMotorizado: MockMotorizado | null = null
 export const localAuth = {
   // Obtener sesión actual
   getCurrentSession: () => {
+    console.log('🔍 getCurrentSession llamado, usuario actual:', currentUser)
     return currentUser
   },
 
   // Obtener motorizado actual
   getCurrentMotorizado: () => {
+    console.log('🔍 getCurrentMotorizado llamado, motorizado actual:', currentMotorizado)
     return currentMotorizado
   },
 
   // Iniciar sesión - SIEMPRE exitoso
   signIn: async (email: string, password: string) => {
-    console.log('🔐 Intentando login con:', email, password)
+    console.log('🔐 LocalAuth.signIn iniciado con:', { email, password })
     
     // Simular delay mínimo
     await new Promise(resolve => setTimeout(resolve, 100))
@@ -48,7 +50,9 @@ export const localAuth = {
       updated_at: new Date().toISOString()
     }
 
-    console.log('✅ Login exitoso:', currentUser, currentMotorizado)
+    console.log('✅ LocalAuth.signIn completado exitosamente')
+    console.log('👤 Usuario creado:', currentUser)
+    console.log('🏍️ Motorizado creado:', currentMotorizado)
 
     return {
       success: true,
@@ -59,7 +63,7 @@ export const localAuth = {
 
   // Registrarse
   signUp: async (email: string, password: string, motorizadoData: any) => {
-    console.log('📝 Intentando registro con:', email, motorizadoData)
+    console.log('📝 LocalAuth.signUp iniciado con:', { email, motorizadoData })
     
     await new Promise(resolve => setTimeout(resolve, 200))
 
@@ -83,7 +87,9 @@ export const localAuth = {
       ...motorizadoData
     }
 
-    console.log('✅ Registro exitoso:', currentUser, currentMotorizado)
+    console.log('✅ LocalAuth.signUp completado exitosamente')
+    console.log('👤 Usuario registrado:', currentUser)
+    console.log('🏍️ Motorizado registrado:', currentMotorizado)
 
     return {
       success: true,
@@ -94,17 +100,21 @@ export const localAuth = {
 
   // Cerrar sesión
   signOut: async () => {
-    console.log('🚪 Cerrando sesión')
+    console.log('🚪 LocalAuth.signOut iniciado')
     
     currentUser = null
     currentMotorizado = null
     
+    console.log('✅ LocalAuth.signOut completado')
     return { success: true }
   },
 
   // Actualizar disponibilidad
   updateDisponibilidad: async (estado: 'disponible' | 'ocupado' | 'desconectado') => {
+    console.log('🔄 LocalAuth.updateDisponibilidad iniciado con estado:', estado)
+    
     if (!currentMotorizado) {
+      console.log('❌ No hay motorizado logueado')
       return { success: false, error: 'No hay motorizado logueado' }
     }
 
@@ -114,7 +124,8 @@ export const localAuth = {
       updated_at: new Date().toISOString()
     }
 
-    console.log('🔄 Estado actualizado:', estado)
+    console.log('✅ LocalAuth.updateDisponibilidad completado')
+    console.log('🔄 Nuevo estado:', currentMotorizado.estado_disponibilidad)
 
     return {
       success: true,

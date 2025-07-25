@@ -8,14 +8,16 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('🔍 Verificando sesión existente...')
+    console.log('🔍 useAuth.useEffect iniciado - Verificando sesión existente...')
     
     // Verificar si hay una sesión activa al cargar
     const currentUser = localAuth.getCurrentSession()
     const currentMotorizado = localAuth.getCurrentMotorizado()
     
+    console.log('📊 Sesión encontrada:', { currentUser, currentMotorizado })
+    
     if (currentUser && currentMotorizado) {
-      console.log('✅ Sesión encontrada:', currentUser.email)
+      console.log('✅ Sesión válida encontrada, estableciendo estado')
       setUser(currentUser)
       setMotorizado(currentMotorizado)
     } else {
@@ -23,27 +25,31 @@ export function useAuth() {
     }
     
     setLoading(false)
+    console.log('🏁 useAuth.useEffect completado')
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    console.log('🔐 Iniciando signIn con:', email)
+    console.log('🔐 useAuth.signIn iniciado con:', { email, password })
     
     try {
+      console.log('📞 Llamando a localAuth.signIn...')
       const result = await localAuth.signIn(email, password)
       
-      console.log('📊 Resultado del login:', result)
+      console.log('📋 Resultado de localAuth.signIn:', result)
       
       if (result.success && result.user && result.motorizado) {
+        console.log('✅ Login exitoso, actualizando estado de useAuth')
         setUser(result.user)
         setMotorizado(result.motorizado)
-        console.log('✅ Estado actualizado en useAuth')
+        console.log('🎯 Estado actualizado - Usuario:', result.user.email)
+        console.log('🎯 Estado actualizado - Motorizado:', result.motorizado.nombre)
         return { data: { user: result.user }, error: null }
       } else {
         console.log('❌ Login falló:', result)
         return { data: { user: null }, error: { message: 'Error en login' } }
       }
     } catch (error) {
-      console.error('💥 Error en signIn:', error)
+      console.error('💥 Error en useAuth.signIn:', error)
       return { data: { user: null }, error: { message: 'Error de conexión' } }
     }
   }
@@ -53,6 +59,8 @@ export function useAuth() {
     password: string, 
     motorizadoData: Omit<MockMotorizado, 'id' | 'user_id' | 'created_at' | 'updated_at'>
   ) => {
+    console.log('📝 useAuth.signUp iniciado')
+    
     try {
       const result = await localAuth.signUp(email, password, motorizadoData)
       
@@ -64,19 +72,22 @@ export function useAuth() {
         return { data: { user: null }, error: { message: 'Error en registro' } }
       }
     } catch (error) {
-      console.error('Error en signUp:', error)
+      console.error('Error en useAuth.signUp:', error)
       return { data: { user: null }, error: { message: 'Error de conexión' } }
     }
   }
 
   const signOut = async () => {
+    console.log('🚪 useAuth.signOut iniciado')
+    
     try {
       await localAuth.signOut()
       setUser(null)
       setMotorizado(null)
+      console.log('✅ useAuth.signOut completado')
       return { error: null }
     } catch (error) {
-      console.error('Error en signOut:', error)
+      console.error('Error en useAuth.signOut:', error)
       return { error: { message: 'Error al cerrar sesión' } }
     }
   }
@@ -97,7 +108,13 @@ export function useAuth() {
     }
   }
 
-  console.log('🎯 Estado actual useAuth:', { user: user?.email, motorizado: motorizado?.nombre, loading })
+  // Log del estado actual cada vez que cambie
+  useEffect(() => {
+    console.log('🎯 Estado actual de useAuth:')
+    console.log('  - Loading:', loading)
+    console.log('  - User:', user?.email || 'null')
+    console.log('  - Motorizado:', motorizado?.nombre || 'null')
+  }, [user, motorizado, loading])
 
   return {
     user,

@@ -16,31 +16,33 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('🚀 Formulario enviado con:', email, password)
+    console.log('🚀 LoginForm.handleSubmit iniciado')
+    console.log('📝 Datos del formulario:', { email, password })
     
     setLoading(true)
     setError('')
 
     try {
-      console.log('📞 Llamando a signIn...')
+      console.log('📞 Llamando a useAuth.signIn...')
       const result = await signIn(email, password)
-      console.log('📋 Resultado recibido:', result)
+      console.log('📋 Resultado de useAuth.signIn:', result)
 
       if (result.error) {
         console.log('❌ Error en login:', result.error.message)
         setError(result.error.message)
       } else if (result.data?.user) {
-        console.log('✅ Login exitoso para:', result.data.user.email)
-        // El useAuth manejará la actualización del estado
+        console.log('✅ Login exitoso en LoginForm para:', result.data.user.email)
+        // El useAuth manejará la actualización del estado y el App.tsx detectará el cambio
       } else {
         console.log('⚠️ Resultado inesperado:', result)
         setError('Resultado inesperado del login')
       }
     } catch (err) {
-      console.error('💥 Error capturado en handleSubmit:', err)
+      console.error('💥 Error capturado en LoginForm.handleSubmit:', err)
       setError('Error inesperado. Intenta nuevamente.')
     } finally {
       setLoading(false)
+      console.log('🏁 LoginForm.handleSubmit completado')
     }
   }
 
@@ -53,11 +55,18 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Bienvenido</h1>
           <p className="text-gray-600">Inicia sesión en tu cuenta de motorizado</p>
-          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-            <p className="font-medium mb-1">✅ Sistema Local Activo</p>
-            <p><strong>Email:</strong> test@email.com</p>
-            <p><strong>Contraseña:</strong> 123456</p>
-            <p className="mt-1 text-xs">O cualquier email/contraseña</p>
+          
+          {/* Información de debug */}
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+            <p className="font-bold mb-2">🔧 MODO DESARROLLO LOCAL</p>
+            <p className="mb-1"><strong>Email:</strong> test@email.com</p>
+            <p className="mb-1"><strong>Contraseña:</strong> 123456</p>
+            <p className="text-xs mt-2 text-green-600">
+              ✅ Sistema 100% local - Cualquier email/contraseña funciona
+            </p>
+            <p className="text-xs mt-1 text-green-600">
+              🔍 Abre la consola del navegador (F12) para ver logs detallados
+            </p>
           </div>
         </div>
 
@@ -103,7 +112,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-red-600 text-sm">{error}</p>
+              <p className="text-red-600 text-sm font-medium">❌ {error}</p>
             </div>
           )}
 

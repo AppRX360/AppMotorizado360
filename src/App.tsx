@@ -23,6 +23,14 @@ function App() {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
   const [activeTab, setActiveTab] = useState('dashboard')
 
+  // Log del estado de autenticación para debugging
+  useEffect(() => {
+    console.log('🎯 App.tsx - Estado de autenticación:')
+    console.log('  - Loading:', loading)
+    console.log('  - User:', user?.email || 'null')
+    console.log('  - Motorizado:', motorizado?.nombre || 'null')
+  }, [user, motorizado, loading])
+
   const { 
     asignaciones, 
     loading: pedidosLoading, 
@@ -47,19 +55,25 @@ function App() {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-          <p className="text-gray-600">Cargando...</p>
+          <p className="text-gray-600">Cargando aplicación...</p>
+          <p className="text-xs text-gray-500 mt-2">Verificando autenticación...</p>
         </div>
       </div>
     )
   }
 
+  console.log('🔍 App.tsx - Evaluando condición de autenticación:', { user: !!user, motorizado: !!motorizado })
+
   if (!user || !motorizado) {
+    console.log('🚪 App.tsx - Mostrando formulario de autenticación')
     return authMode === 'login' ? (
       <LoginForm onToggleMode={() => setAuthMode('register')} />
     ) : (
       <RegisterForm onToggleMode={() => setAuthMode('login')} />
     )
   }
+
+  console.log('✅ App.tsx - Usuario autenticado, mostrando aplicación principal')
 
   const renderContent = () => {
     switch (activeTab) {
