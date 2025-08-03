@@ -7,9 +7,10 @@ import {
   Navigation
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
+import { useSimpleAuth } from '../../hooks/useSimpleAuth'
 
 export function Header() {
-  const { motorizado, signOut, updateDisponibilidad } = useAuth()
+  const { motorizado, signOut, updateDisponibilidad } = useSimpleAuth()
 
   const handleSignOut = async () => {
     await signOut()

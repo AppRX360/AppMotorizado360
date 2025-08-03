@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { MockAsignacion, mockAsignaciones } from '../data/mockData'
-import { useAuth } from './useAuth'
+import { useSimpleAuth } from './useSimpleAuth'
 
 // Estado local para pedidos
 let localAsignaciones: MockAsignacion[] = [...mockAsignaciones]
 
 export function usePedidos() {
-  const { motorizado } = useAuth()
+  const { motorizado } = useSimpleAuth()
   const [asignaciones, setAsignaciones] = useState<MockAsignacion[]>([])
   const [loading, setLoading] = useState(true)
 

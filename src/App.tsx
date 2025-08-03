@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { useAuth } from './hooks/useAuth'
+import { useSimpleAuth } from './hooks/useSimpleAuth'
 import { usePedidos } from './hooks/usePedidos'
 import { useEstadisticas } from './hooks/useEstadisticas'
-import { LoginForm } from './components/Auth/LoginForm'
+import { SimpleLoginForm } from './components/Auth/SimpleLoginForm'
 import { RegisterForm } from './components/Auth/RegisterForm'
 import { Header } from './components/Layout/Header'
 import { BottomNavigation } from './components/Layout/BottomNavigation'
@@ -19,13 +19,13 @@ import {
 } from 'lucide-react'
 
 function App() {
-  const { user, motorizado, loading } = useAuth()
+  const { user, motorizado, loading } = useSimpleAuth()
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
   const [activeTab, setActiveTab] = useState('dashboard')
 
   // Log del estado de autenticación para debugging
   useEffect(() => {
-    console.log('🎯 App.tsx - Estado de autenticación:')
+    console.log('🎯 App.tsx - Estado de autenticación (SimpleAuth):')
     console.log('  - Loading:', loading)
     console.log('  - User:', user?.email || 'null')
     console.log('  - Motorizado:', motorizado?.nombre || 'null')
@@ -55,7 +55,7 @@ function App() {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-          <p className="text-gray-600">Cargando aplicación...</p>
+          <p className="text-gray-600">Cargando aplicación (SimpleAuth)...</p>
           <p className="text-xs text-gray-500 mt-2">Verificando autenticación...</p>
         </div>
       </div>
@@ -65,15 +65,15 @@ function App() {
   console.log('🔍 App.tsx - Evaluando condición de autenticación:', { user: !!user, motorizado: !!motorizado })
 
   if (!user || !motorizado) {
-    console.log('🚪 App.tsx - Mostrando formulario de autenticación')
+    console.log('🚪 App.tsx - Mostrando formulario de autenticación (SimpleAuth)')
     return authMode === 'login' ? (
-      <LoginForm onToggleMode={() => setAuthMode('register')} />
+      <SimpleLoginForm onToggleMode={() => setAuthMode('register')} />
     ) : (
       <RegisterForm onToggleMode={() => setAuthMode('login')} />
     )
   }
 
-  console.log('✅ App.tsx - Usuario autenticado, mostrando aplicación principal')
+  console.log('✅ App.tsx - Usuario autenticado (SimpleAuth), mostrando aplicación principal')
 
   const renderContent = () => {
     switch (activeTab) {

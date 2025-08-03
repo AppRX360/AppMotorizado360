@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { MockEstadisticas, MockEntrega, mockEstadisticasHoy, mockEntregas } from '../data/mockData'
-import { useAuth } from './useAuth'
+import { useSimpleAuth } from './useSimpleAuth'
 
 // Estado local para estadísticas
 let localEstadisticas: MockEstadisticas = { ...mockEstadisticasHoy }
 let localEntregas: MockEntrega[] = [...mockEntregas]
 
 export function useEstadisticas() {
-  const { motorizado } = useAuth()
+  const { motorizado } = useSimpleAuth()
   const [estadisticasHoy, setEstadisticasHoy] = useState<MockEstadisticas | null>(null)
   const [historialEntregas, setHistorialEntregas] = useState<MockEntrega[]>([])
   const [loading, setLoading] = useState(true)
